@@ -34,6 +34,10 @@ def open_file(file):
 
 
 def processData():
+  global amount_verb
+  amount_verb = amt.get() * 0.085 / 100 + 0.015
+  print(amount_verb)
+    
   print(file1.name)
   print(file2.name)
   ### All convolution Algorithmns for One Channel Real Signals
@@ -50,11 +54,16 @@ def processData():
 frame1 = tk.Frame()
 frame2 = tk.Frame()
 
-text_source = tk.Label(root, text="File original", font="Raleway")
-text_source.grid(column=0, row=1)
+text_amount = tk.Label(root, text="Intensity", font=("Comic Sans MS", 16, "bold"))
+text_amount.grid(column=1, row=2)
+amt = tk.Scale(root, from_=0, to=100, orient=tk.HORIZONTAL)
+amt.grid(column=1, row=3)
 
-text_filter = tk.Label(root, text="Reverb IR", font="Raleway")
-text_filter.grid(column=2, row=1)
+text_source = tk.Label(root, text="File original", font=("Comic Sans MS", 16, "bold"))
+text_source.grid(column=0, row=4)
+
+text_filter = tk.Label(root, text="Reverb IR", font=("Comic Sans MS", 16, "bold"))
+text_filter.grid(column=2, row=4)
 
 #browse button
 browse_text = tk.StringVar()
@@ -64,17 +73,17 @@ process_text = tk.StringVar()
 process_text.set("Convolve")
 
 file1 = MyFile()
-browse_btn1 = tk.Button(root, textvariable=browse_text, command=lambda:open_file(file1), font="Raleway", bg="#20bebe", fg="white", height=2, width=15)
-browse_btn1.grid(column=0, row=2)
+browse_btn1 = tk.Button(root, textvariable=browse_text, command=lambda:open_file(file1), font=("Comic Sans MS", 16, "bold"), bg="#20bebe", fg="white", height=2, width=15)
+browse_btn1.grid(column=0, row=5)
 
 file2 = MyFile()
-browse_btn2 = tk.Button(root, textvariable=browse_text, command=lambda:open_file(file2), font="Raleway", bg="#20bebe", fg="white", height=2, width=15)
-browse_btn2.grid(column=2, row=2)
+browse_btn2 = tk.Button(root, textvariable=browse_text, command=lambda:open_file(file2), font=("Comic Sans MS", 16, "bold"), bg="#20bebe", fg="white", height=2, width=15)
+browse_btn2.grid(column=2, row=5)
 
-process_btn = tk.Button(root, textvariable=process_text, command=lambda:processData(), font="Raleway", bg="#20bebe", fg="white", height=2, width=15)
-process_btn.grid(column=1, row=3, pady=50)
+process_btn = tk.Button(root, textvariable=process_text, command=lambda:processData(), font=("Comic Sans MS", 16, "bold"), bg="#20bebe", fg="white", height=2, width=15)
+process_btn.grid(column=1, row=6, pady=50)
 
-canvas = tk.Canvas(root, width=600, height=100)
+canvas = tk.Canvas(root, width=600, height=0)
 canvas.grid(columnspan=3)
 
 root.mainloop()
