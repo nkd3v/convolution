@@ -9,36 +9,16 @@ import os
 def zero_pad(x, k):
   return np.append(x, np.zeros(k))
 
-# partition impulse response and precompute frequency response for each block
-def precompute_frequency_responses(h, L, k, num_blocks):
-  H = np.zeros((num_blocks, L+k)).astype('complex128')
-  for j in range(num_blocks):
-    H[j] += np.fft.fft(zero_pad(h[j*k: (j+1)*k], L))
-  return H
-
-# break sig into chunks (size L)
-# break ir into chunks (size k)
-# use overlap add fft based conv to convolve
-def uniform_partitioned_conv(sound_src, source_kernel):
-  source_kernel_len = len(source_kernel)
-  signal_block_size = 2**8 #signal block size
-  ir_block_size = signal_block_size #ir block size
-
-  sound_src = sound_src[0: -1 * (sound_src.shape[0] % signal_block_size)]
-  N = sound_src.shape[0]
-  num_ir_blocks = int(source_kernel_len/ir_block_size)
-  num_sig_blocks = int(sound_src.shape[0] / signal_block_size)
-  H = precompute_frequency_responses(source_kernel, signal_block_size, ir_block_size, num_ir_blocks)
-  output = np.zeros(source_kernel_len-1 + num_sig_blocks*signal_block_size)
+def fft_conv(x, h):
+  L, P = len(x), len(h)
+  h_zp = zero_pad(h, L-1)
+  x_zp = zero_pad(x, P-1)
+  X = np.fft.fft(x_zp)
   start_time = time.time()
-  for i in range(num_sig_blocks):
-    input_buffer = zero_pad(sound_src[i*signal_block_size: (i+1)*signal_block_size], ir_block_size)
-    spectrum = np.fft.fft(input_buffer)
-    for j in range(num_ir_blocks):
-      output[i*signal_block_size+j*ir_block_size: (i+1)*signal_block_size+(j+1)*ir_block_size-1] += np.fft.ifft(spectrum * H[j]).real[:2*ir_block_size-1]
-  x_zp = zero_pad(sound_src, source_kernel_len-1)
+  output = np.fft.ifft(X * np.fft.fft(h_zp)).real
   output = amount_verb * output + x_zp
-  return output, time.time() - start_time
+  end_time = time.time()
+  return output, end_time - start_time
 
 
 class MyFile:
@@ -61,7 +41,7 @@ def processData():
   sample_rate2, reverb = scipy.io.wavfile.read(file2.name)
   reverb = (reverb.astype('float64') / np.max(reverb))[:,0] #one channel only
 
-  signal3, timer1 = uniform_partitioned_conv(guitar, reverb)
+  signal3, timer1 = fft_conv(guitar, reverb)
   scipy.io.wavfile.write('output.wav', sample_rate1, signal3.astype('int16'))
   print('Uniform Partitioned Conv Reverb: ' + str(timer1) + ' seconds')
   os.startfile('output.wav')
